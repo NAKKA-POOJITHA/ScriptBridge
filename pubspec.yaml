@@ -1,0 +1,41 @@
+name: scriptbridge
+description: A real-time offline Indic script transliteration application.
+version: 1.0.0+1
+
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Camera and permissions
+  camera: ^0.10.5+9
+  permission_handler: ^11.3.1
+
+  # Machine learning & OCR
+  google_mlkit_text_recognition: ^0.11.0
+
+  # Offline caching & storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+
+  # State management
+  provider: ^6.1.2
+
+  # Speech synthesis
+  flutter_tts: ^3.8.5
+
+  # UI icons & extra elements
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

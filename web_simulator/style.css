@@ -1,0 +1,440 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
+
+/* Color Variables */
+:root {
+  --bg-color: #0F1717;
+  --surface-color: #162222;
+  --accent-color: #00f5d4;
+  --primary-color: #00b4d8;
+  --text-primary: #ffffff;
+  --text-secondary: #a8dadc;
+  --text-muted: #64dfdf;
+  --card-border: rgba(0, 245, 212, 0.2);
+  --glass-bg: rgba(22, 34, 34, 0.75);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* App Wrapper */
+.app-container {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  width: 100vw;
+  height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 300px;
+  }
+}
+
+/* Camera/Viewfinder Section */
+.viewfinder-section {
+  position: relative;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#camera-video, #canvas-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#canvas-overlay {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Mock signboard view */
+.signboard-view {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Static Street Sign graphic layout */
+.static-sign {
+  background: linear-gradient(135deg, #0077b6, #03045e);
+  color: #fff;
+  padding: 24px 48px;
+  border-radius: 12px;
+  border: 6px solid #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-size: 40px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 1px;
+  text-align: center;
+  max-width: 80%;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+}
+
+/* Real-time floating overlay text */
+.text-overlays-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.translit-overlay-box {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1.5px solid var(--accent-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 245, 212, 0.3);
+  animation: fadeIn 0.2s ease-out;
+  transition: transform 0.1s ease-in-out;
+}
+
+.translit-overlay-box:active {
+  transform: scale(0.95);
+}
+
+.overlay-speaker-icon {
+  color: var(--accent-color);
+  font-size: 16px;
+  animation: pulse 1.5s infinite;
+}
+
+.overlay-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-translit {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.overlay-original {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* Live scan tag */
+.live-scan-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1.2px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 4;
+  letter-spacing: 0.5px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  animation: flash 1s infinite alternate;
+}
+
+.signboard-label {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 4;
+}
+
+/* Control Panel Section */
+.control-sidebar {
+  background-color: var(--surface-color);
+  border-left: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 5;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.sidebar-header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.sidebar-header p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Config cards */
+.config-group {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-item label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.config-item select, .config-item input[type="text"] {
+  width: 100%;
+  background-color: var(--bg-color);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.config-item select:focus {
+  border-color: var(--accent-color);
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.toggle-row span {
+  font-size: 14px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider-round {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.1);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider-round:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider-round {
+  background-color: var(--accent-color);
+}
+
+input:checked + .slider-round:before {
+  transform: translateX(20px);
+}
+
+/* Ranges */
+.range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-container input[type="range"] {
+  flex-grow: 1;
+  accent-color: var(--accent-color);
+}
+
+.range-value {
+  font-size: 12px;
+  color: var(--accent-color);
+  width: 32px;
+  text-align: right;
+}
+
+/* History logs list */
+.history-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.history-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.history-title-row h2 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.clear-btn:hover {
+  text-decoration: underline;
+}
+
+.history-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.history-card:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-translit {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.history-orig {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
+.history-play-btn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flash {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}

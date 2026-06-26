@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptBridge Web Simulator</title>
+  <!-- Material Design Icons CDN -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- 1. Real-time Live Camera / Image Viewfinder -->
+    <div class="viewfinder-section">
+      <!-- Pulse dot and state label -->
+      <div class="live-scan-badge">
+        <div class="pulse-dot"></div>
+        <span id="scan-status-text">LIVE SCANNING</span>
+      </div>
+
+      <!-- Displays current signboard details -->
+      <div id="signboard-banner" class="signboard-label">Signboard: Telugu</div>
+
+      <!-- Interactive overlaid bounding boxes stack -->
+      <div id="overlays-root" class="text-overlays-container">
+        <!-- Floating glassmorphic boxes populated dynamically via JS -->
+      </div>
+
+      <!-- Backdrop: Renders selected mock sign or webcam stream -->
+      <div id="signboard-display" class="signboard-view">
+        <div id="signboard-graphic" class="static-sign">విజయవాడ</div>
+      </div>
+      
+      <!-- Webcam preview element (hidden by default) -->
+      <video id="camera-video" autoplay playsinline style="display: none;"></video>
+    </div>
+
+    <!-- 2. Sidebar Control Panel -->
+    <div class="control-sidebar">
+      
+      <!-- Header -->
+      <div class="sidebar-header">
+        <h1>ScriptBridge</h1>
+        <p>Offline Indic Transliteration Simulator</p>
+      </div>
+
+      <!-- Configuration Card -->
+      <div class="config-group">
+        <!-- Mode Switcher -->
+        <div class="config-item">
+          <label>Capture Mode</label>
+          <select id="select-mode">
+            <option value="mock">Preloaded Street Signboards (Offline Mock)</option>
+            <option value="webcam">Device Camera (Real webcam)</option>
+          </select>
+        </div>
+
+        <!-- Street Signboard selector (Mock mode only) -->
+        <div id="sign-select-item" class="config-item">
+          <label>Select Street Signboard</label>
+          <select id="select-signboard">
+            <option value="telugu" selected>Telugu: విజయవాడ (Vijayawada)</option>
+            <option value="kannada">Kannada: ಬೆಂಗಳೂರು (Bengaluru)</option>
+            <option value="hindi">Hindi: विजयवाड़ा (Vijayawada)</option>
+            <option value="tamil">Tamil: சென்னை (Chennai)</option>
+            <option value="malayalam">Malayalam: തിരുവനന്തപുരം (Trivandrum)</option>
+            <option value="bengali">Bengali: কলকাতা (Kolkata)</option>
+            <option value="gujarati">Gujarati: અમદાવાદ (Ahmedabad)</option>
+            <option value="punjabi">Punjabi: ਅੰਮ੍ਰਿਤਸਰ (Amritsar)</option>
+          </select>
+        </div>
+
+        <!-- Target Transliteration Script -->
+        <div class="config-item">
+          <label>Target Translation Script</label>
+          <select id="select-target">
+            <option value="English" selected>English (Latin)</option>
+            <option value="Hindi">हिन्दी (Hindi)</option>
+            <option value="Telugu">తెలుగు (Telugu)</option>
+            <option value="Tamil">தமிழ் (Tamil)</option>
+            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+            <option value="Malayalam">മലയാളം (Malayalam)</option>
+            <option value="Bengali">বাংলা (Bengali)</option>
+            <option value="Gujarati">ગુજરાતી (Gujarati)</option>
+            <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <span>Live Frame Capture</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-scan" checked>
+            <span class="slider-round"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- TTS settings -->
+      <div class="config-group">
+        <div class="toggle-row">
+          <span>Auto-Speak Speech</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-auto-tts">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="config-item">
+          <label>Speech Speed</label>
+          <div class="range-container">
+            <input type="range" id="speech-rate" min="0.5" max="1.5" step="0.1" value="0.9">
+            <span id="rate-val-label" class="range-value">90%</span>
+          </div>
+        </div>
+
+        <div class="config-item">
+          <label>Speech Pitch</label>
+          <div class="range-container">
+            <input type="range" id="speech-pitch" min="0.5" max="1.5" step="0.1" value="1.0">
+            <span id="pitch-val-label" class="range-value">1.0x</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scan History cache -->
+      <div class="history-section">
+        <div class="history-title-row">
+          <h2>Scan History</h2>
+          <button id="btn-clear-history" class="clear-btn">Clear Box</button>
+        </div>
+        <div id="history-list-root" class="history-list">
+          <!-- Populated from LocalStorage via JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
