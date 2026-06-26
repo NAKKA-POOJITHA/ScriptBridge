@@ -1,5 +1,6 @@
 # ScriptBridge 🌉
 
+deployed link :https://script-bridge-flame.vercel.app
 Real-Time Offline Indic Script Transliteration Tool for Street Signs.
 
 ScriptBridge is designed to help travelers, commuters, and language learners bridge the language barrier by scanning and transliterating street signboards in real-time. By leveraging offline-first technologies, it detects written Indic scripts, transliterates them into a target script (including English/Latin or other Indian languages), and provides text-to-speech feedback.
