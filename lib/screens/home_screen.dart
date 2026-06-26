@@ -50,15 +50,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. Camera Preview
-          const Positioned.fill(
-            child: CameraPreviewWidget(),
-          ),
-
-          // 2. Real-time OCR overlay
-          if (provider.isScanning && provider.errorMessage == null && !provider.isLoading)
+          // 1. Camera Preview + Text Overlay stack centered with aspect ratio
+          if (!provider.isLoading && provider.errorMessage == null && provider.cameraService.controller != null && provider.cameraService.controller!.value.isInitialized)
+            Center(
+              child: AspectRatio(
+                // Invert the landscape aspect ratio for portrait layout
+                aspectRatio: 1 / provider.cameraService.controller!.value.aspectRatio,
+                child: Stack(
+                  children: [
+                    const CameraPreviewWidget(),
+                    if (provider.isScanning)
+                      const TextOverlayWidget(),
+                  ],
+                ),
+              ),
+            )
+          else
+            // Fallback for loading, errors, or uninitialized state
             const Positioned.fill(
-              child: TextOverlayWidget(),
+              child: CameraPreviewWidget(),
             ),
 
           // 3. Top Floating Panel (Status pill & quick configs)

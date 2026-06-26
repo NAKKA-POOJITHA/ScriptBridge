@@ -104,42 +104,9 @@ class CameraPreviewWidget extends StatelessWidget {
       );
     }
 
-    // 3. Responsive Full-Screen Camera Preview
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        final screenHeight = constraints.maxHeight;
-
-        // Calculate aspect ratios
-        final cameraAspectRatio = controller.value.aspectRatio;
-        
-        // Scale factors to crop the video output into full screen cover without stretching
-        double scale = 1.0;
-        
-        // If screen aspect ratio differs from camera ratio, scale the preview
-        final screenAspectRatio = screenWidth / screenHeight;
-        
-        if (screenAspectRatio > cameraAspectRatio) {
-          scale = screenAspectRatio / cameraAspectRatio;
-        } else {
-          scale = cameraAspectRatio / screenAspectRatio;
-        }
-
-        return ClipRect(
-          child: Container(
-            color: Colors.black,
-            child: Center(
-              child: Transform.scale(
-                scale: scale,
-                child: AspectRatio(
-                  aspectRatio: cameraAspectRatio,
-                  child: CameraPreview(controller),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+    // Render raw camera preview, layout & aspect ratio is controlled by the parent AspectRatio widget
+    return ClipRect(
+      child: CameraPreview(controller),
     );
   }
 }

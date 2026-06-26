@@ -7,6 +7,8 @@
   <!-- Material Design Icons CDN -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Tesseract.js for browser OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -34,7 +36,7 @@
       </div>
       
       <!-- Webcam preview element (hidden by default) -->
-      <video id="camera-video" autoplay playsinline style="display: none;"></video>
+      <video id="camera-video" autoplay playsinline muted style="display: none;"></video>
     </div>
 
     <!-- 2. Sidebar Control Panel -->
@@ -72,6 +74,22 @@
           </select>
         </div>
 
+        <!-- Source Script selector (Webcam mode only) -->
+        <div id="source-select-item" class="config-item" style="display: none;">
+          <label>Source Script (OCR)</label>
+          <select id="select-source">
+            <option value="Telugu" selected>Telugu</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Hindi">Hindi (Devanagari)</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Malayalam">Malayalam</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Gujarati">Gujarati</option>
+            <option value="Punjabi">Punjabi</option>
+            <option value="English">English (Latin)</option>
+          </select>
+        </div>
+
         <!-- Target Transliteration Script -->
         <div class="config-item">
           <label>Target Translation Script</label>
@@ -94,6 +112,13 @@
             <input type="checkbox" id="toggle-scan" checked>
             <span class="slider-round"></span>
           </label>
+        </div>
+
+        <!-- Manual Capture Action (Webcam mode only) -->
+        <div id="capture-action-item" class="config-item" style="display: none; margin-top: 8px;">
+          <button id="btn-capture" class="primary-btn">
+            <span class="material-icons">photo_camera</span> Capture & Scan Frame
+          </button>
         </div>
       </div>
 

@@ -353,8 +353,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClearHistory = document.getElementById('btn-clear-history');
   const scanStatusText = document.getElementById('scan-status-text');
   const signSelectItem = document.getElementById('sign-select-item');
+  const selectSource = document.getElementById('select-source');
+  const sourceSelectItem = document.getElementById('source-select-item');
+  const captureActionItem = document.getElementById('capture-action-item');
+  const btnCapture = document.getElementById('btn-capture');
 
   let activeStream = null;
+  let ocrWorker = null;
+  let ocrWorkerLangs = null;
+
+  async function getOCRWorker(langs) {
+    const key = JSON.stringify(langs);
+    if (ocrWorker && ocrWorkerLangs === key) {
+      return ocrWorker;
+    }
+
+    scanStatusText.innerText = 'INITIALIZING OCR ENGINE...';
+
+    if (ocrWorker) {
+      try {
+        await ocrWorker.terminate();
+      } catch (err) {
+        console.error('Failed to terminate old worker:', err);
+      }
+      ocrWorker = null;
+    }
+
+    ocrWorker = await Tesseract.createWorker(langs);
+    ocrWorkerLangs = key;
+    return ocrWorker;
+  }
   
   // A. Initialize UI Settings from LocalStorage
   speechRate.addEventListener('input', () => {
@@ -507,11 +535,166 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // E. Handle View Mode changes (Webcam vs Preloaded Offline Mock)
+  const TESSERACT_LANGS = {
+    'Telugu': 'tel',
+    'Kannada': 'kan',
+    'Hindi': 'hin',
+    'Tamil': 'tam',
+    'Malayalam': 'mal',
+    'Bengali': 'ben',
+    'Gujarati': 'guj',
+    'Punjabi': 'pan',
+    'English': 'eng'
+  };
+
+  let ocrInterval = null;
+  let ocrProcessing = false;
+
+  async function runWebcamOCR(force = false) {
+    if (ocrProcessing) return;
+    ocrProcessing = true;
+
+    try {
+      const mode = selectMode.value;
+      if (mode !== 'webcam' || (!toggleScan.checked && !force)) {
+        ocrProcessing = false;
+        return;
+      }
+
+      if (cameraVideo.readyState < 2) {
+        ocrProcessing = false;
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const maxDim = 600;
+      let w = cameraVideo.videoWidth;
+      let h = cameraVideo.videoHeight;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(cameraVideo, 0, 0, w, h);
+
+      const sourceLangName = selectSource.value;
+      const tesseractLang = TESSERACT_LANGS[sourceLangName] || 'eng';
+      const langs = tesseractLang === 'eng' ? ['eng'] : [tesseractLang, 'eng'];
+
+      const worker = await getOCRWorker(langs);
+
+      scanStatusText.innerText = 'SCANNING FRAME...';
+
+      const result = await worker.recognize(canvas);
+
+      if (selectMode.value !== 'webcam' || (!toggleScan.checked && !force)) {
+        ocrProcessing = false;
+        return;
+      }
+
+      scanStatusText.innerText = 'LIVE SCANNING';
+      overlaysRoot.innerHTML = '';
+
+      const lines = result.data.lines;
+      const c_w = overlaysRoot.clientWidth;
+      const c_h = overlaysRoot.clientHeight;
+
+      const scale = Math.max(c_w / w, c_h / h);
+      const offset_x = (c_w - w * scale) / 2;
+      const offset_y = (c_h - h * scale) / 2;
+
+      let hasDetections = false;
+
+      for (const line of lines) {
+        const text = line.text.trim();
+        if (text.length < 3) continue;
+
+        const detection = detectScript(text);
+        const targetScript = selectTarget.value;
+        const transliterated = transliterate(text, detection.script !== 'Unknown' ? detection.script : sourceLangName, targetScript);
+
+        if (!transliterated || transliterated.trim() === '') continue;
+
+        hasDetections = true;
+        saveCacheRecord(text, detection.script !== 'Unknown' ? detection.script : sourceLangName, targetScript, transliterated);
+
+        const bbox = line.bbox;
+        const left = bbox.x0 * scale + offset_x;
+        const top = bbox.y0 * scale + offset_y;
+        const width = (bbox.x1 - bbox.x0) * scale;
+        const height = (bbox.y1 - bbox.y0) * scale;
+
+        const box = document.createElement('div');
+        box.className = 'translit-overlay-box';
+        box.style.left = `${left}px`;
+        box.style.top = `${top}px`;
+        box.style.width = `${width}px`;
+        box.style.height = `${height}px`;
+
+        box.innerHTML = `
+          <span class="overlay-speaker-icon material-icons">volume_up</span>
+          <div class="overlay-texts">
+            <span class="overlay-translit">${transliterated}</span>
+            <span class="overlay-original">(${text} • Conf: ${detection.confidence}%)</span>
+          </div>
+        `;
+
+        box.addEventListener('click', () => {
+          speakTranslit(transliterated, targetScript);
+        });
+
+        overlaysRoot.appendChild(box);
+
+        if (toggleAutoTts.checked) {
+          speakTranslit(transliterated, targetScript);
+        }
+      }
+
+      if (!hasDetections && toggleScan.checked) {
+        scanStatusText.innerText = 'LIVE SCANNING (NO TEXT)';
+      }
+
+    } catch (err) {
+      console.error('OCR Error:', err);
+      if (toggleScan.checked || force) {
+        scanStatusText.innerText = 'OCR ERROR';
+      }
+    } finally {
+      ocrProcessing = false;
+    }
+  }
+
+  function startWebcamOCR() {
+    stopWebcamOCR();
+    runWebcamOCR(false);
+    ocrInterval = setInterval(() => runWebcamOCR(false), 1500);
+  }
+
+  function stopWebcamOCR() {
+    if (ocrInterval) {
+      clearInterval(ocrInterval);
+      ocrInterval = null;
+    }
+    overlaysRoot.innerHTML = '';
+  }
+
   async function updateCaptureMode() {
     const mode = selectMode.value;
     
+    // Clear old overlays during any transition
+    overlaysRoot.innerHTML = '';
+    
     if (mode === 'webcam') {
       signSelectItem.style.display = 'none';
+      sourceSelectItem.style.display = 'block';
+      captureActionItem.style.display = 'block';
       signboardDisplay.style.display = 'none';
       cameraVideo.style.display = 'block';
       signboardBanner.innerText = 'Camera Preview';
@@ -521,6 +704,15 @@ document.addEventListener('DOMContentLoaded', () => {
           video: { facingMode: 'environment' }
         });
         cameraVideo.srcObject = activeStream;
+        cameraVideo.muted = true;
+        
+        try {
+          await cameraVideo.play();
+        } catch (playErr) {
+          console.warn("Video play was interrupted/blocked:", playErr);
+        }
+        
+        startWebcamOCR();
       } catch (err) {
         alert('Webcam Access Denied or Unreachable: ' + err.message);
         selectMode.value = 'mock';
@@ -529,12 +721,27 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       // Offline mock signboards
       signSelectItem.style.display = 'block';
+      sourceSelectItem.style.display = 'none';
+      captureActionItem.style.display = 'none';
       signboardDisplay.style.display = 'flex';
       cameraVideo.style.display = 'none';
       
       if (activeStream) {
         activeStream.getTracks().forEach(t => t.stop());
         activeStream = null;
+      }
+      stopWebcamOCR();
+      
+      // Clean up Tesseract worker when switching back to mock mode
+      if (ocrWorker) {
+        scanStatusText.innerText = 'CLEANING UP OCR ENGINE...';
+        try {
+          await ocrWorker.terminate();
+        } catch (err) {
+          console.error('Error terminating worker:', err);
+        }
+        ocrWorker = null;
+        ocrWorkerLangs = null;
       }
       
       updateSignboardDisplay();
@@ -559,9 +766,34 @@ document.addEventListener('DOMContentLoaded', () => {
   selectMode.addEventListener('change', updateCaptureMode);
   selectSignboard.addEventListener('change', updateSignboardDisplay);
   selectTarget.addEventListener('change', () => {
-    processActiveSignboard();
+    if (selectMode.value === 'webcam') {
+      if (toggleScan.checked) runWebcamOCR();
+    } else {
+      processActiveSignboard();
+    }
   });
-  toggleScan.addEventListener('change', processActiveSignboard);
+  selectSource.addEventListener('change', () => {
+    if (selectMode.value === 'webcam' && toggleScan.checked) {
+      runWebcamOCR();
+    }
+  });
+  toggleScan.addEventListener('change', () => {
+    if (selectMode.value === 'webcam') {
+      if (toggleScan.checked) {
+        startWebcamOCR();
+      } else {
+        stopWebcamOCR();
+        scanStatusText.innerText = 'SCAN PAUSED';
+      }
+    } else {
+      processActiveSignboard();
+    }
+  });
+
+  // Manual Capture action trigger
+  btnCapture.addEventListener('click', () => {
+    runWebcamOCR(true);
+  });
 
   // Initialize
   updateCaptureMode();
