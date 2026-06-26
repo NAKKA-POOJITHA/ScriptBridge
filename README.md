@@ -61,6 +61,16 @@ The project includes a lightweight, fully functional web-based simulator simulat
 > [!NOTE]
 > The Web Simulator allows you to test the transliteration mapping either using **mock preloaded signboards** (working offline) or utilizing your **actual device camera (webcam)**.
 
+#### ☁️ Deploying the Web Simulator to Vercel
+
+This repository includes a `vercel.json` file in the root that automatically maps incoming traffic to the `web_simulator` subdirectory.
+
+To deploy it:
+1. Push this repository to your GitHub account.
+2. Go to [Vercel](https://vercel.com/) and click **Add New Project**.
+3. Import this repository.
+4. Keep the default settings and click **Deploy**. Vercel will serve the static files from the `web_simulator/` directory automatically.
+
 ---
 
 ### 2. Flutter Mobile Application
